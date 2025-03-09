@@ -1,29 +1,25 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
+// Define a sample route
 router.get('/', (req, res) => {
-  res.redirect('/login');
+    res.send('Welcome to my Node app!');
 });
 
-router.get('/login', (req, res) => {
-  res.render('login', { title: 'Login' });
+// User registration route
+router.post('/users/register', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ username, password: hashedPassword });
+        await newUser.save();
+        res.redirect('/login');
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
 });
 
-router.get('/register', (req, res) => {
-  res.render('register', { title: 'Register' });
-});
-
-router.get('/dashboard', (req, res) => {
-  if (req.session.user) {
-    res.render('dashboard', { title: 'Dashboard', user: req.session.user });
-  } else {
-    res.redirect('/login');
-  }
-});
-
-router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/login');
-});
-
+// Export the router
 module.exports = router;

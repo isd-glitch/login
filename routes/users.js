@@ -1,22 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
 
-const users = [];
-
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  users.push({ username, password });
-  res.redirect('/login');
-});
-
-router.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    req.session.user = username;
-    res.redirect('/dashboard');
-  } else {
-    res.status(401).send('<script>alert("ログインに失敗しました"); window.location.href = "/register";</script>');
+  try {
+    const newUser = new User({ username, password });
+    await newUser.save();
+    res.redirect('/login');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/register');
   }
 });
 
